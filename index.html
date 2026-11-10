@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DSH 神经终端</title>
+  <meta name="description" content="淋雨家 DSH（DeepSeek Harness）AI 工作台设计理念学习站：从理念到实战，养成赛博「自己」。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=3" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <div class="fx-scan" aria-hidden="true"></div>
+  <div class="fx-vignette" aria-hidden="true"></div>
+
+  <!-- 顶栏 = 场景标签栏：每一章就是一个「场景」 -->
+  <header class="topbar">
+    <a class="brand" href="#boot" aria-label="回到开头">
+      <span class="brand-mark">DSH</span><span class="brand-sub">//神经终端</span>
+    </a>
+    <nav class="tabs" id="tabs" aria-label="章节"></nav>
+    <div class="pin" id="pin" title="当前章节已认领">
+      <span class="pin-dot"></span><span id="pin-text">✓ 已钉住</span>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="chapter hero" id="boot" data-formation="core"></section>
+    <section class="chapter" id="why" data-formation="walls"></section>
+    <section class="chapter" id="layers" data-formation="layers"></section>
+    <section class="chapter" id="core" data-formation="triad"></section>
+    <section class="chapter" id="identity" data-formation="orbit"></section>
+    <section class="chapter" id="mcp" data-formation="bridge"></section>
+    <section class="chapter" id="dispatch" data-formation="ring"></section>
+    <section class="chapter" id="topics" data-formation="scatter"></section>
+    <section class="chapter" id="rule2mech" data-formation="lattice"></section>
+    <section class="chapter" id="build" data-formation="helix"></section>
+    <section class="chapter" id="pitfalls" data-formation="shards"></section>
+    <section class="chapter" id="quiz" data-formation="core"></section>
+    <footer class="site-foot" id="foot"></footer>
+  </main>
+
+  <!-- 底部状态栏 -->
+  <div class="statusbar" aria-live="polite">
+    <span>session-0000…</span>
+    <span id="sb-scene">场景：开机</span>
+    <span class="sb-mem"><span>§〇</span><i><b id="sb-bar"></b></i><span id="sb-kb">0.0 / 4 KB</span></span>
+  </div>
+
+  <noscript><p class="noscript">这个学习站需要启用 JavaScript。</p></noscript>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
