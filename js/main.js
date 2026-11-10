@@ -1,7 +1,6 @@
 // 启动入口：装配 3D 场景、渲染章节、三部分导航、本章目录、舞台 / 阅读切换
 import { CHAPTERS, PARTS } from './content.js';
-import { renderTheory, $ } from './ui.js';
-import { renderPractice } from './ui-practice.js';
+import { renderAll, $ } from './ui.js';
 
 const KEY_SEEN = 'dsh.seen.v1';
 const read = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
@@ -26,13 +25,14 @@ addEventListener('dsh:handoff', (e) => {
   bar.style.background = b > 4096 ? 'var(--red)' : 'var(--cyan)';
 });
 
-renderTheory(scene);
-renderPractice(scene);
+// 章节容器按 CH 生成（编号、顺序、形态都以 content.js 为准）
+$('#foot').insertAdjacentHTML('beforebegin', CHAPTERS.map((c) => `<section class="chapter" id="${c.id}" data-formation="${c.formation}"></section>`).join(''));
+renderAll(scene);
 
 // ---------- 导航：三部分 + 本部分章节 ----------
 const seen = new Set(read(KEY_SEEN, []).filter((id) => CHAPTERS.some((c) => c.id === id)));
 const parts = $('#parts'), tabs = $('#tabs');
-parts.innerHTML = PARTS.map((p, i) => `<a class="part" href="#${CHAPTERS.find((c) => c.part === p.id).id}" data-part="${p.id}" style="--pc:${p.color}">${'一二三'[i]} · ${p.name}<span>${p.sub}</span></a>`).join('');
+parts.innerHTML = PARTS.map((p, i) => `<a class="part" href="#${CHAPTERS.find((c) => c.part === p.id).id}" data-part="${p.id}" style="--pc:${p.color}">${'一二三四五六'[i]} · ${p.name}<span>${p.sub}</span></a>`).join('');
 tabs.innerHTML = CHAPTERS.map((c) => `<a class="tab ${seen.has(c.id) ? 'seen' : ''}" href="#${c.id}" data-id="${c.id}" data-part="${c.part}"><span class="cd">${c.code}</span>${c.name}</a>`).join('');
 const progress = () => {
   $('#prog-txt').textContent = `已读 ${seen.size} / ${CHAPTERS.length}`;
