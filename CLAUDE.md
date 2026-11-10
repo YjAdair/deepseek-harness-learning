@@ -16,7 +16,8 @@ DeepSeekHarness/
 │   ├── scene.js         three.js 背景场景（粒子形态 / 场景节点 / 后期辉光）
 │   ├── content.js       课程内容数据（纯数据，不写 DOM）
 │   ├── ui.js            章节模板 chapter() 与「看懂 / 机制」两部分的渲染，导出公共小工具
-│   └── ui-practice.js   「动手」部分（机制化 → 自检 + 页脚）与交互工具：清单、JSON 构建器、交接计量器、测验
+│   ├── ui-practice.js   「动手」部分（机制化 → 自检 + 页脚）：清单、事故时间线、测验
+│   └── tools.js         交互工具：场景 JSON 构建器（场景章）、开头交接计量器（记忆章），以及 $ / esc / store 小工具
 ├── assets/figures/      原仓库 `配图/` 的 MIT 原图（保持原文件名，出处写进 docs/sources.md）
 ├── assets/video/        原视频时间轴截图 / GIF，命名 `t<mmss>-<主题>.jpg|gif`
 ├── docs/
