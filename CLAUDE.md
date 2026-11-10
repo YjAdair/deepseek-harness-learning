@@ -18,6 +18,7 @@ DeepSeekHarness/
 │   ├── ui.js            理念部分（开机 → 专题）DOM 渲染与交互，导出公共小工具
 │   └── ui-practice.js   实战部分（机制化 → 判据 + 页脚）：清单、JSON 构建器、交接计量器、测验
 ├── assets/figures/      原仓库 `配图/` 的 MIT 原图（保持原文件名，出处写进 docs/sources.md）
+├── assets/video/        原视频时间轴截图 / GIF，命名 `t<mmss>-<主题>.jpg|gif`
 ├── docs/
 │   ├── sources.md       内容出处与提炼说明
 │   └── LICENSE-luanyujia-workbench.txt  原仓库 MIT 许可证全文
@@ -29,7 +30,11 @@ DeepSeekHarness/
 - 不引入构建工具；需要第三方库时只用 jsdelivr/unpkg 带**精确版本号**的地址
 - 架构图：节点数据只放 `content.js` 的 `ARCH`，章节↔节点对应放 `CH_NODES`；章节头的「你在这里」定位小图由 `head()` 自动生成，不在各章手写
 - 通俗化：每章「大白话」块的数据放 `content.js` 的 `PLAIN[章节id]`（类比 + 小例子 + 可选配图），由 `plain(id)` 渲染，插在章节头之后、专业内容之前
-- 配图只用 MIT 原仓库的图或用户明确授权的图；视频画面未经授权不放
+- 配图来源只有两类：MIT 原仓库的图；原视频画面（用户 2026-11-10 决定使用）。视频截图 / GIF 必须标时间戳并链接到 B 站对应秒数（`?t=`）；GIF 宽 ≤640、单个 ≤1.5 MB、懒加载
+- 视频转写稿只放 scratchpad，不进仓库；站内只放自己的概述和不超过一句的原话引用
+- 术语：原文的内部节号（`§〇` / `§五` / `§6.4`）不当概念名用。`§〇` 一律写「场景记忆 · 开头交接」（AI 开场读场景记忆，读的就是这一节），首次出现注明「原文记作 §〇，即场景记忆文件第 0 节」
+- 案例：只能来自原仓库原文或视频转写，每条标出处（仓库文件路径或视频时间戳），原话加引号照抄；推断不得写成案例。数据放 `content.js` 的 `CASES`，由 `cases(id)` 渲染，结构固定为「出了什么事 → 后果 → 所以这样设计 → 出处」
+- 理论文案以作者仓库 https://github.com/mashanglinyu/luanyujia-workbench 为准，改文案前先回原文核对
 - 学习进度等用户状态只存 `localStorage`，键名统一前缀 `dsh.` 并带版本号（如 `dsh.progress.v1`），读写包 try/catch
 
 ## 内容纪律

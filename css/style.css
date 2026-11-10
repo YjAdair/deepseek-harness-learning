@@ -461,3 +461,62 @@ pre.term .s { color: var(--amber); }
   .plain-wrap.has-fig { grid-template-columns: 1fr; }
   .plain-a { font-size: 16px; }
 }
+
+/* ---------- 真实案例卡 ---------- */
+.chapter > .cases, .chapter > .vclips { width: var(--wide); }
+.cases { margin: 0 0 22px; }
+.cases-tag { font: 600 12px var(--f-display); letter-spacing: 0.18em; color: var(--red); margin-bottom: 10px; }
+.cases-tag span { letter-spacing: 0; font: 12px var(--f-body); color: var(--dim); margin-left: 8px; }
+.cases-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; align-items: start; }
+.case { background: rgba(10,4,8,0.9); border: 1px solid rgba(255,59,92,0.35); border-top: 3px solid var(--red); padding: 14px 16px; }
+.case header { display: flex; gap: 10px; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+.case h4 { margin: 0; font: 700 16px/1.45 var(--f-body); }
+.case-date { flex: none; font: 600 11px var(--f-mono); color: var(--amber); border: 1px solid rgba(255,176,32,0.5); padding: 0 6px; }
+.case dl { margin: 0; font-size: 14px; }
+.case dt { color: var(--dim); font: 600 11px var(--f-display); letter-spacing: 0.12em; margin: 10px 0 2px; }
+.case dt:first-child { margin-top: 0; }
+.case dd { margin: 0; }
+.case dt.so { color: var(--green); }
+.case dd.so { color: var(--green); }
+.case q, .vtl q { display: block; margin-top: 6px; padding-left: 10px; border-left: 2px solid var(--amber); color: var(--amber); font-style: normal; }
+.case q::before, .vtl q::before { content: '原话：「'; } .case q::after, .vtl q::after { content: '」'; }
+.case footer { margin-top: 10px; font-size: 12px; color: var(--dim); word-break: break-all; }
+.case-img { margin-bottom: 10px; }
+.case .fig-btn img, .vclip img, .vtl-img img { background: #000; }
+
+/* 视频片段条 */
+.vclips { margin: 0 0 20px; }
+.vclips-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.vclip { margin: 0; border: 1px solid var(--line); background: var(--panel-solid); padding: 6px; }
+.vclip figcaption { font-size: 13px; padding: 6px 2px 0; }
+
+/* 视频导读时间轴 */
+.chapter > .vtl { width: var(--wide); }
+.vtl { list-style: none; margin: 0 0 16px; padding: 0; border-left: 2px solid var(--line-strong); }
+.vtl-i { position: relative; display: grid; grid-template-columns: 74px minmax(0, 1fr) 260px; gap: 14px; padding: 12px 0 12px 16px; background: rgba(4,8,12,0.88); margin-bottom: 8px; }
+.vtl-i::before { content: ''; position: absolute; left: -7px; top: 18px; width: 12px; height: 12px; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+.vtl-t { font: 600 14px var(--f-mono); white-space: nowrap; }
+.vtl-b h4 { margin: 0 0 4px; font-size: 16px; }
+.vtl-b p { margin: 0; font-size: 14px; }
+.vtl-ch { display: inline-block; margin-top: 6px; font-size: 13px; }
+.vtl-img { align-self: start; }
+
+/* 事故时间线 */
+.tl { list-style: none; margin: 0; padding: 0; }
+.tl li { display: grid; grid-template-columns: 96px 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--line); font-size: 14px; }
+.tl-d { font: 600 12px var(--f-mono); color: var(--amber); padding-top: 3px; }
+.tl-so { color: var(--green); margin: 2px 0; }
+
+/* 术语表、交接对照 */
+.gloss dl { margin: 0; display: grid; grid-template-columns: 160px 1fr; gap: 8px 14px; font-size: 14px; }
+.gloss dt { color: var(--cyan); font-weight: 700; }
+.gloss dd { margin: 0; }
+.term.bad { border-color: rgba(255,59,92,0.5); }
+.handoff-vs .term { margin: 0; }
+@media (max-width: 760px) {
+  .cases-grid { grid-template-columns: 1fr; }
+  .vtl-i { grid-template-columns: 1fr; gap: 6px; }
+  .gloss dl { grid-template-columns: 1fr; gap: 2px; }
+  .gloss dd { margin-bottom: 8px; }
+  .tl li { grid-template-columns: 1fr; gap: 2px; }
+}

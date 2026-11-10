@@ -1,9 +1,18 @@
 // 实战部分（07–10 章 + 页脚）：机制化、上手清单、构建器、踩坑、测验
 import {
   META, RULE2MECH, BUILD_STEPS, BUILD_WARN, QUICKSTART, PANEL_TYPES, NO_SURPRISE,
-  INCIDENTS, INCIDENTS_COMMON, PITFALLS, QUIZ, MY_TAKEAWAYS,
+  INCIDENTS, INCIDENTS_COMMON, PITFALLS, QUIZ, MY_TAKEAWAYS, CASES, CHAPTERS,
 } from './content.js';
 import { $, esc, head, bindHighlight } from './ui.js';
+
+// 事故时间线：所有带日期的案例按日期排
+function timeline() {
+  const list = CASES.filter((c) => c.date).sort((a, b) => a.date.localeCompare(b.date));
+  if (!list.length) return '';
+  return `<div class="panel reveal"><div class="panel-tag">事故时间线 · 规矩是被事故一条条逼出来的</div>
+    <ol class="tl">${list.map((c) => { const ch = CHAPTERS.find((x) => x.id === c.ch);
+      return `<li><span class="tl-d">${c.date}</span><div><b>${esc(c.title)}</b><div class="tl-so">→ ${esc(c.so)}</div>${ch && ch.id !== 'pitfalls' ? `<a href="#${ch.id}">在 CH.${ch.code}「${esc(ch.name)}」细看 ▸</a>` : ''}</div></li>`; }).join('')}</ol></div>`;
+}
 
 const KEY_PROGRESS = 'dsh.progress.v1';
 const store = {
@@ -56,7 +65,7 @@ function renderBuild(el, scene) {
         <pre class="term" id="sj-out" style="max-height:300px"></pre>
       </div>
     </div>
-    <div class="panel reveal"><div class="panel-tag">工具 2 · §〇 交接计量器（≤ 4 KB）</div>
+    <div class="panel reveal"><div class="panel-tag">工具 2 · 开头交接计量器（≤ 4 KB，原文记作 §〇）</div>
       <div class="form"><textarea id="ho" spellcheck="false"></textarea></div>
       <div class="kb"><span id="ho-kb">0 B</span><i><b id="ho-bar" style="width:0"></b></i><span>4096 B</span></div>
       <div class="lint" id="ho-lint"></div>
@@ -179,7 +188,7 @@ function initHandoff(el) {
 |---|---|---|---|
 | 学习站 | dsh-site.md | 进行中 | 补实战章节 |
 ### 3) 私有记忆变更
-- 2026-11-09：§〇 改为覆盖写（原因：追加后没人读）
+- 2026-11-09：开头交接改为覆盖写（原因：追加后没人读）
 ### 4) 下一步 / 卡点
 - 下一步：跑 场景记忆 check，通过后再换会话
 - 卡点：无
@@ -215,6 +224,7 @@ function renderPitfalls(el) {
     <div class="reveal">${INCIDENTS.map((x, i) => `<div class="panel inc"><div class="panel-tag">INCIDENT.0${i + 1}</div><h3>${x.t}</h3>
       <dl><dt>真因</dt><dd>${esc(x.why)}</dd><dt>抓手</dt><dd>${esc(x.grip)}</dd></dl></div>`).join('')}</div>
     <p class="judge reveal">${INCIDENTS_COMMON}</p>
+    ${timeline()}
     <div class="panel reveal" style="margin-top:18px"><div class="panel-tag">踩坑卡 · 点卡片翻面看真因</div>
       <div class="filters">${cats.map((c, i) => `<button class="${i ? '' : 'on'}" data-c="${c}">${c}</button>`).join('')}</div>
       <div class="grid g2" id="pits">${PITFALLS.map((p) => `<div class="pit" data-c="${p.cat}" tabindex="0" role="button" aria-label="${esc(p.sym)}，翻面">

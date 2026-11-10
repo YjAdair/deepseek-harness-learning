@@ -17,7 +17,7 @@ try {
   document.body.classList.add('no-gl');
 }
 
-// 状态栏 §〇 计量跟随交接计量器
+// 状态栏「开头交接」计量跟随交接计量器
 addEventListener('dsh:handoff', (e) => {
   const b = e.detail;
   $('#sb-kb').textContent = `${(b / 1024).toFixed(1)} / 4 KB`;

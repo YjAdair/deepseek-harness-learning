@@ -1,7 +1,7 @@
 // 理念部分（开机 → 专题）的 DOM 渲染与交互
 import {
   CHAPTERS, MCP, META, BOOT_LINES, WALLS, PILLARS, LAYERS, CORE, IDENTITY_STEPS, BIND_FIELDS,
-  IDENTITY_LAWS, DISPATCH, TOPICS, ARCH, CH_NODES, PLAIN,
+  IDENTITY_LAWS, DISPATCH, TOPICS, ARCH, CH_NODES, PLAIN, CASES, GLOSSARY, VIDEO,
 } from './content.js';
 
 export const $ = (s, r = document) => r.querySelector(s);
@@ -74,6 +74,44 @@ export function plain(id) {
       <p class="plain-a">${esc(p.analogy)}</p><p class="plain-s">${esc(p.story)}</p></div>${fig}</div>`;
 }
 
+// 视频时间戳工具
+export const mmss = (t) => `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+export const vlink = (t) => `${META.video}?t=${Math.floor(t)}`;
+const srcHTML = (src) => src.map((x) => x.video != null
+  ? `<a href="${vlink(x.video)}" target="_blank" rel="noopener">▶ 视频 ${mmss(x.video)}</a>`
+  : `<a href="${x.href}" target="_blank" rel="noopener">⌥ ${esc(x.label)}</a>`).join(' · ');
+
+// 「为什么这样设计 · 真实案例」卡
+export function caseCard(c) {
+  return `<article class="case">
+    <header><h4>${esc(c.title)}</h4>${c.date ? `<span class="case-date">${c.date}</span>` : ''}</header>
+    ${c.img ? `<button class="fig-btn case-img" type="button" data-zoom="${c.img}" aria-label="放大视频画面"><img src="${c.img}" alt="${esc(c.title)}" loading="lazy" /></button>` : ''}
+    <dl>
+      <dt>出了什么事</dt><dd>${esc(c.what)}${c.q ? `<q>${esc(c.q)}</q>` : ''}</dd>
+      <dt>后果</dt><dd>${esc(c.cost)}</dd>
+      <dt class="so">所以这样设计</dt><dd class="so">${esc(c.so)}</dd>
+    </dl>
+    <footer>出处：${srcHTML(c.src)}</footer>
+  </article>`;
+}
+export function cases(id) {
+  const list = CASES.filter((c) => c.ch === id);
+  if (!list.length) return '';
+  return `<section class="cases reveal" aria-label="真实案例">
+    <div class="cases-tag">为什么这样设计 · 真实案例 <span>${list.length} 条，均来自原仓库或原视频</span></div>
+    <div class="cases-grid">${list.map(caseCard).join('')}</div></section>`;
+}
+
+// 本章在视频里对应的片段
+function vclips(id) {
+  const used = new Set(CASES.filter((c) => c.ch === id).map((c) => c.img));
+  const segs = (VIDEO.segments || []).filter((v) => v.ch === id && v.img && !used.has(v.img)).slice(0, 4);
+  if (!segs.length) return '';
+  return `<div class="vclips reveal"><div class="cases-tag">视频里怎么讲</div><div class="vclips-row">
+    ${segs.map((v) => `<figure class="vclip"><button class="fig-btn" type="button" data-zoom="${v.img}" aria-label="放大"><img src="${v.img}" alt="${esc(v.title)}" loading="lazy" /></button>
+      <figcaption><a href="${vlink(v.t)}" target="_blank" rel="noopener">▶ ${mmss(v.t)}</a> ${esc(v.title)}</figcaption></figure>`).join('')}</div></div>`;
+}
+
 export function head(id, title, lede, { withPlain = true } = {}) {
   const code = chOf(id)?.code ?? '--';
   return `<div class="ch-head reveal ${CH_NODES[id] && CH_NODES[id] !== '*' ? 'with-mini' : ''}">
@@ -82,7 +120,7 @@ export function head(id, title, lede, { withPlain = true } = {}) {
       <h2 class="ch-title glitch">${title}</h2>
       ${lede ? `<p class="ch-lede">${lede}</p>` : ''}
     </div>${mini(id)}
-  </div>${withPlain ? plain(id) : ''}`;
+  </div>${withPlain ? plain(id) + vclips(id) + cases(id) : ''}`;
 }
 
 // 图片放大：全站共用一个 <dialog>
@@ -145,7 +183,9 @@ function renderMap(el) {
       <div class="arch-scroll">${archSvg(litOf('map'), true)}</div>
       <div class="arch-info" id="arch-info" aria-live="polite"></div>
       <div class="arch-legend"><span class="lg main">主轴：规则自上而下</span><span class="lg loop">派单闭环</span><span class="lg soft">承载 / 认领 / 巡检 / 归档</span><span class="lg dash">虚线框：隔离或只读</span></div>
-    </div>` + plain('map');
+    </div>` + plain('map') + `
+    <div class="panel reveal gloss"><div class="panel-tag">术语表 · 先把这几个词说成人话</div>
+      <dl>${GLOSSARY.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl></div>`;
   const info = $('#arch-info', el);
   const show = (id) => {
     const n = ARCH.nodes.find((x) => x.id === id); if (!n) return;
@@ -162,6 +202,23 @@ function renderMap(el) {
     g.addEventListener('keydown', (e) => { if (e.key === 'Enter') { const ch = chOf(ARCH.nodes.find((x) => x.id === g.dataset.id)?.ch); if (ch) location.hash = ch.id; } });
   });
   show('host');
+}
+
+// ---------- 视频导读 ----------
+function renderVideo(el) {
+  const segs = VIDEO.segments || [];
+  el.innerHTML = head('video', '视频<em>导读</em>：12 分钟讲了什么', VIDEO.lede, { withPlain: false }) + `
+    <ol class="vtl reveal">${segs.map((v) => {
+      const ch = chOf(v.ch);
+      return `<li class="vtl-i">
+        <a class="vtl-t" href="${vlink(v.t)}" target="_blank" rel="noopener">▶ ${mmss(v.t)}</a>
+        <div class="vtl-b"><h4>${esc(v.title)}</h4><p>${esc(v.sum)}</p>
+          ${v.q ? `<q>${esc(v.q)}</q>` : ''}
+          ${ch ? `<a class="vtl-ch" href="#${ch.id}">本站 CH.${ch.code}「${esc(ch.name)}」▸</a>` : ''}</div>
+        ${v.img ? `<button class="fig-btn vtl-img" type="button" data-zoom="${v.img}" aria-label="放大视频画面"><img src="${v.img}" alt="${esc(v.title)}" loading="lazy" /></button>` : ''}
+      </li>`;
+    }).join('')}</ol>
+    <p class="judge reveal">${esc(VIDEO.note)} <a href="${META.video}" target="_blank" rel="noopener">去 B 站看原视频 ▸</a></p>`;
 }
 
 // ---------- 01 本质 ----------
@@ -217,13 +274,22 @@ function memoryHTML(m) {
   return `
     ${m.tiers.map((t) => `<div class="tier"><div><b>${t.name}</b> · ${t.what}<div style="font-size:13px;color:var(--dim)">${t.who}</div></div><div class="lim">${t.limit}</div></div>`).join('')}
     <p style="font-size:14px;color:var(--dim);margin-top:10px">💸 ${m.cost}</p>
-    <h3 style="margin-top:18px">§〇 当前交接 · 固定五小节</h3>
-    <pre class="term"><span class="k">## §〇 当前交接（≤ 4 KB）</span>
+    <h3 style="margin-top:18px">场景记忆 · 开头交接</h3>
+    <p style="font-size:14px">AI 开场「读场景记忆」，第一眼读的就是记忆文件开头这一节。原文给它编了节号 <code>§〇</code>（§ 是节号符，〇 是零：<b>第 0 节</b>）；同一文件后面还有只追加的 <code>§五 长期记忆</code>。它只回答四件事：<b>我是谁 / 干到哪 / 下一步 / 卡在哪</b>。</p>
+    <div class="grid g2 handoff-vs"><div><div class="panel-tag ok">✓ 原文模板：固定五小节，覆盖写</div><pre class="term"><span class="k">## §〇 当前交接（≤ 4 KB）</span>
 <span class="s">### 1) 上次交接</span>    <span class="c">做了什么 / 结果 / 证据</span>
 <span class="s">### 2) 当前项目</span>    <span class="c">项目 | 记忆文件 | 状态 | 下一步</span>
 <span class="s">### 3) 私有记忆变更</span> <span class="c">日期：改了什么 + 为什么</span>
 <span class="s">### 4) 下一步 / 卡点</span> <span class="c">没有卡点就写「无」</span>
-<span class="s">### 5) 全貌</span>        <span class="c">工具生成，别手改</span></pre>
+<span class="s">### 5) 全貌</span>        <span class="c">工具生成，别手改</span></pre></div>
+    <div><div class="panel-tag warn">⛔ 原文点名的反例：写成周报</div><pre class="term bad"><span class="k">## 今日工作</span>
+<span class="c">1. 改了首页……（三大段）
+2. 排查了登录……（三大段）
+3. 讨论了改版……（三大段）
+4. ……
+5. ……</span></pre>
+    <p style="font-size:13px;color:var(--dim)">结果：一是超出 4 KB，二是新会话读完仍不知道「下一步该干什么」。</p></div></div>
+    <p class="judge">判据：新会话只读这一节，30 秒内能说出「下一步干什么」。</p>
     <ul class="clean" style="margin-top:12px">${m.rules.map((x) => `<li>${x}</li>`).join('')}</ul>
     <p class="judge">${m.judge}</p>`;
 }
@@ -326,7 +392,7 @@ function renderMcp(el, scene) {
     </div>
     <div class="panel reveal"><div class="panel-tag">机密闸 · 写进代码，不只写在文档</div>
       <p style="font-size:14px">这些都是站外服务。正文含 密码 / token / 密钥 / 身份证 / 银行卡 / 手机号 ⇒ 调用前就拒发。试试：</p>
-      <div class="form"><input id="gate-in" value="帮我总结一下 §〇 交接该写什么" aria-label="要发给网页版 AI 的内容"></div>
+      <div class="form"><input id="gate-in" value="帮我总结一下场景记忆的开头交接该写什么" aria-label="要发给网页版 AI 的内容"></div>
       <div class="lint" id="gate-out"></div>
     </div>
     <div class="panel reveal"><div class="panel-tag">排障 · 大部分故障不报错，按症状查</div>
@@ -468,6 +534,7 @@ export function renderTheory(scene) {
   initZoom();
   renderBoot($('#boot'));
   renderMap($('#map'));
+  renderVideo($('#video'));
   renderWhy($('#why'), scene);
   renderLayers($('#layers'), scene);
   renderCore($('#core'), scene);
