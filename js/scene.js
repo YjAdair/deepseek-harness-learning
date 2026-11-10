@@ -146,12 +146,13 @@ const vert = /* glsl */ `
     gl_Position = projectionMatrix * mv;
   }`;
 const frag = /* glsl */ `
+  uniform float uDim;
   varying vec3 vColor; varying float vAlpha;
   void main() {
     vec2 c = gl_PointCoord - 0.5; float d = length(c);
     if (d > 0.5) discard;
     float a = smoothstep(0.5, 0.0, d);
-    gl_FragColor = vec4(vColor, a * a * vAlpha);
+    gl_FragColor = vec4(vColor * uDim, a * a * vAlpha * uDim);
   }`;
 
 export function createScene(canvas) {
@@ -183,7 +184,7 @@ export function createScene(canvas) {
   geo.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
   const uniforms = {
     uTime: { value: 0 }, uHighlight: { value: -1 }, uFlow: { value: 0 },
-    uPixel: { value: dpr }, uSize: { value: 42 },
+    uPixel: { value: dpr }, uSize: { value: 42 }, uDim: { value: 1 },
   };
   const mat = new THREE.ShaderMaterial({
     vertexShader: vert, fragmentShader: frag, uniforms,
@@ -214,6 +215,8 @@ export function createScene(canvas) {
 
   // 状态
   let formation = 'core', coreVis = 1, coreTarget = 1, offsetX = 0, mouse = { x: 0, y: 0 }, scrollSpin = 0;
+  // 舞台 / 阅读：章头亮，正文压暗；baseBloom 随屏宽，dim 平滑过渡
+  let dim = 1, dimTarget = 1, baseBloom = 0.9, flowBase = 0, flowBoost = 0;
 
   function setFormation(name) {
     if (!FORMATIONS[name] || name === formation) return;
@@ -221,11 +224,14 @@ export function createScene(canvas) {
     target = FORMATIONS[name]();
     geo.attributes.aGroup.array.set(target.group); geo.attributes.aGroup.needsUpdate = true;
     geo.attributes.aPhase.array.set(target.phase); geo.attributes.aPhase.needsUpdate = true;
-    uniforms.uFlow.value = ['ring', 'helix', 'triad', 'lattice', 'layers', 'bridge'].includes(name) ? 1 : 0;
+    flowBase = ['ring', 'helix', 'triad', 'lattice', 'layers', 'bridge'].includes(name) ? 1 : 0;
+    uniforms.uFlow.value = Math.max(flowBase, flowBoost);
     uniforms.uHighlight.value = -1;
     coreTarget = name === 'core' || name === 'orbit' ? 1 : 0;
   }
   const highlight = (g) => { uniforms.uHighlight.value = g ?? -1; };
+  const setFocus = (mode) => { dimTarget = mode === 'read' ? 0.28 : 1; };
+  const setFlow = (on) => { flowBoost = on ? 1 : 0; uniforms.uFlow.value = Math.max(flowBase, flowBoost); };
 
   function resize() {
     const w = innerWidth, h = innerHeight;
@@ -235,7 +241,7 @@ export function createScene(canvas) {
     camera.position.z = w < 760 ? 13.5 : 10;
     camera.updateProjectionMatrix();
     offsetX = w >= 1100 ? 3.2 : w >= 760 ? 2.2 : 0;
-    bloom.strength = w < 760 ? 0.5 : 0.9; // 窄屏粒子在正文背后，降低辉光保可读性
+    baseBloom = w < 760 ? 0.5 : 0.9; // 窄屏粒子在正文背后，降低辉光保可读性
   }
   addEventListener('resize', resize); resize();
   addEventListener('pointermove', (e) => { mouse.x = e.clientX / innerWidth - 0.5; mouse.y = e.clientY / innerHeight - 0.5; });
@@ -262,7 +268,11 @@ export function createScene(canvas) {
     points.rotation.y += dt * spin * (formation === 'ring' ? 0 : 1);
     points.rotation.z = formation === 'ring' ? points.rotation.z + dt * 0.05 : points.rotation.z * 0.95;
     coreVis += (coreTarget - coreVis) * 0.05;
-    coreMesh.material.opacity = 0.55 * coreVis;
+    dim += (dimTarget - dim) * 0.06;
+    uniforms.uDim.value = dim;
+    bloom.strength = baseBloom * (0.3 + 0.7 * dim);
+    grid.material.opacity = 0.5 * (0.35 + 0.65 * dim);
+    coreMesh.material.opacity = 0.55 * coreVis * dim;
     coreMesh.scale.setScalar(0.6 + 0.4 * coreVis + Math.sin(t * 2) * 0.02);
     coreMesh.rotation.x += dt * 0.3; coreMesh.rotation.y += dt * 0.45;
 
@@ -274,5 +284,5 @@ export function createScene(canvas) {
   }
   loop();
 
-  return { setFormation, highlight, setScroll: (p) => { scrollSpin = (p - 0.5) * 0.25; } };
+  return { setFormation, highlight, setFocus, setFlow, setScroll: (p) => { scrollSpin = (p - 0.5) * 0.25; } };
 }

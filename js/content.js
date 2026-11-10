@@ -10,13 +10,20 @@ export const META = {
   author: '淋雨家（B 站：马上淋雨）',
 };
 
-// 顶部「场景标签栏」= 章节导航
-const CH = [
-  ['boot', '开机', '◉'], ['map', '全景', '▦'], ['why', '本质', '◇'], ['layers', '六层', '≡'], ['core', '三机制', '△'],
-  ['identity', '认领', '⌖'], ['mcp', '接手', '⌁'], ['dispatch', '派单', '⇄'], ['topics', '专题', '◈'],
-  ['rule2mech', '机制化', '⚙'], ['build', '实战', '▶'], ['pitfalls', '踩坑', '⚠'], ['quiz', '判据', '?'],
+// 章节导航：三部分 · 13 章。formation = 该章 3D 粒子形态（scene.js 的 FORMATIONS）
+export const PARTS = [
+  { id: 'p1', name: '看懂', sub: '为什么', color: '#3df2ff' },
+  { id: 'p2', name: '机制', sub: '是什么', color: '#ffb020' },
+  { id: 'p3', name: '动手', sub: '怎么做', color: '#4dff9c' },
 ];
-export const CHAPTERS = CH.map(([id, name, icon], i) => ({ id, name, icon, code: String(i).padStart(2, '0') }));
+const CH = [
+  ['intro', '序章', '◉', 'p1', 'core'], ['why', '本质', '◇', 'p1', 'walls'], ['layers', '六层', '≡', 'p1', 'layers'],
+  ['scene', '场景', '▣', 'p2', 'scatter'], ['memory', '记忆', '◫', 'p2', 'helix'], ['collab', '协作', '△', 'p2', 'triad'],
+  ['identity', '认领', '⌖', 'p2', 'orbit'], ['dispatch', '派单', '⇄', 'p2', 'ring'], ['mcp', '接手', '⌁', 'p2', 'bridge'],
+  ['rule2mech', '机制化', '⚙', 'p3', 'lattice'], ['build', '实战', '▶', 'p3', 'core'], ['pitfalls', '踩坑', '⚠', 'p3', 'shards'],
+  ['quiz', '自检', '?', 'p3', 'core'],
+];
+export const CHAPTERS = CH.map(([id, name, icon, part, formation], i) => ({ id, name, icon, part, formation, code: String(i).padStart(2, '0') }));
 
 export const BOOT_LINES = [
   '[ OK ] 加载宿主画像 ............ L1/共享层',
@@ -289,25 +296,54 @@ export const MY_TAKEAWAYS = [
   { t: '一次只接一块', d: '壳 → 场景 → 绑定 → 记忆 → 自检 → MCP，每步有看得见的验收再走下一步。' },
 ];
 
+
+// ---------- 章头（结论句 / 一句背景 / 判据 / 不这样会怎样） ----------
+// 判据与后果取自原仓库原文或已有文案；title 可含 <em>
+export const HEADS = {
+  why: { title: '记忆在<em>文件</em>里，不在会话里', lede: '为什么不能一个聊天框干到底？不是 AI 不够强，是结构撑不住。',
+    judge: '一条会话的价值 = 它产出的文件，不是它聊了多少。「换会话」不是灾难，没写交接就换才是。', fail: '上下文互挤、记忆互串、规矩不分 —— 一个窗口迟早撞上这三堵墙。' },
+  layers: { title: '每样东西<em>只属于一层</em>', lede: '同一台机器上常驻多个 AI 场景，像一群同事：共用规则与台账，各自有独立记忆。悬停任一层，背景对应的那一环会亮起。',
+    judge: '每个东西只属于一层，只在一个地方是「真源」；其他地方只放指针。', fail: '共享层混进私有内容，大家互相干扰；改了规则不告诉负责人，规矩悄悄分叉。' },
+  scene: { title: '一类<em>反复回来</em>的活，配一个场景', lede: '一个场景 = 一类会反复回来的活 + 一套资产 + 一套流程 + 一条常驻 AI。',
+    judge: '半年后我还会为它单独打开一个窗口吗？答不上来就别开。', fail: '全塞一个窗口：上下文互挤、权限混乱。' },
+  memory: { title: '会话会换，记忆<em>留在文件里</em>', lede: '会话迟早被换掉；AI 开场「读场景记忆」，读的就是文件开头那一段交接。',
+    judge: '新会话只读开头交接，30 秒内能说出「下一步干什么」。', fail: '一换会话就「失忆」；记忆越写越肥，最后没人读。' },
+  collab: { title: '每件事<em>只有一个人</em>能改', lede: '多个 AI 当同事：谁说了算、谁改哪里、怎么交活、怎么算交付。',
+    judge: '这东西改了会影响别人吗？会 → 只有负责人能改；不会 → 自己改；是别人的 → 只能写请求。', fail: '互相踩、互相客套烧 token、活没人干。' },
+  identity: { title: 'AI 开场先<em>认领身份</em>', lede: '引擎本身不按场景注入任何东西 —— AI 开场时对自己的身份是空白的。工作台和「多标签浏览器」的根本区别就在这里。',
+    judge: '判断「到位了没有」只能看画面，不能看自己写的存储值。', fail: '引擎不注入身份 ⇒ AI 会猜 ⇒ 串台。' },
+  dispatch: { title: '派单要<em>叫醒对方</em>，不是发公告', lede: '多 AI 系统里最贵的浪费是「双方都在等对方」—— 而且它没有任何报错。',
+    judge: '句子里有「请你改 / 派单 / 做完回一句」⇒ 这是派单 ⇒ 必须真的唤醒对方会话。', fail: '只落盘不唤醒，对方永远看不见；AI 之间来回客气，一天能烧掉几十万 token。' },
+  mcp: { title: '把网页版 AI<em>接成工具</em>', lede: '不花 API token，让本地 AI 能问豆包 / 通义 / DeepSeek / 智谱：复用一个已登录的浏览器，像人一样输入、等它说完、把话取回来。',
+    judge: '它适合「问一次、要一段文字」；不适合「跑一百次」或「必须准时」。', fail: '返回空字符串被当成「AI 说没有」；超时设成无限，卡住时像「一直在思考」。' },
+  rule2mech: { title: '规矩要配<em>会失败的检查</em>', lede: '规矩写在文档里，靠自觉；机制跑在代码里，靠机器。',
+    judge: '如果一个检查永远通过，它就不是检查，是装饰。', fail: '只有规矩的系统，三个月后一定退化成「看心情」。' },
+  build: { title: '先跑通<em>一个场景</em>，再复制', lede: '每步都写清「看到什么才算过」—— 没验收标准的步骤，等于没做。勾选进度会存在你的浏览器里。',
+    judge: '第二天不看昨天的对话，只读开头交接就能接着干，才算跑通。', fail: '第一天就想把 10 个场景全配好，结果哪个都没跑通。' },
+  pitfalls: { title: '看起来成功，<em>其实没生效</em>', lede: '这套工作台不是设计出来的，是用出来的 —— 每条结论背后都有一次真实事故。',
+    judge: '退出码 0 不算成功，判据要落到可复核的东西上（哈希、画面、回读）。', fail: '三起事故都不报错、都是「看起来很小」的操作，事后都变成了一个会失败的检查。' },
+  quiz: { title: '判据<em>自检</em>', lede: '十一道情境题。这套东西学没学会，看你能不能在具体情境里说出「判据」。' },
+};
+
 // ---------- 全景架构图 ----------
 // 结构照搬原仓库《总纲.md》与 配图/拓扑-总纲.svg；坐标系 1000×640，为本站重绘。
 // ch = 这个节点主要在哪一章讲；plain = 一句大白话（本站提炼）。
 const C = { host: '#e8f6ff', con: '#ffd84d', L0: '#ff3b5c', L1: '#ffb020', L2: '#3df2ff', L3: '#b26bff', L4: '#4dff9c', L5: '#8a94a6', ses: '#ff7ad9', aud: '#ffb020' };
 export const ARCH = {
   nodes: [
-    { id: 'host', label: '宿主', sub: '唯一决策人', x: 380, y: 16, w: 240, h: 58, c: C.host, ch: 'core', plain: '你本人，老板。规矩只认你亲口说的或明确同意过的。' },
+    { id: 'host', label: '宿主', sub: '唯一决策人', x: 380, y: 16, w: 240, h: 58, c: C.host, ch: 'collab', plain: '你本人，老板。规矩只认你亲口说的或明确同意过的。' },
     { id: 'console', label: '命令台', sub: '只读 + 路由：分诊 / 派单 / 对账', x: 30, y: 16, w: 290, h: 58, c: C.con, ch: 'dispatch', plain: '前台调度：你一句话，它判断该交给哪个场景，把工单派过去，再盯着回执。' },
     { id: 'L0', label: 'L0 宪法', sub: '最高规则 · 只有宿主能改', x: 380, y: 106, w: 240, h: 58, c: C.L0, ch: 'layers', plain: '公司章程。改一次版本 +1，旧版留档。' },
     { id: 'L1', label: 'L1 共享层', sub: '画像 · 区域表 · 清单 · 待办 · 索引', x: 380, y: 196, w: 240, h: 58, c: C.L1, ch: 'layers', plain: '公共白板和台账：人人能看，各自只写自己那几行。' },
-    { id: 'L2', label: 'L2 场景私有', sub: '每个场景一个文件夹', x: 340, y: 290, w: 320, h: 200, c: C.L2, ch: 'core', box: true, plain: '一个场景 = 一个工位。工位上的东西只有这个场景能写。' },
+    { id: 'L2', label: 'L2 场景私有', sub: '每个场景一个文件夹', x: 340, y: 290, w: 320, h: 200, c: C.L2, ch: 'scene', box: true, plain: '一个场景 = 一个工位。工位上的东西只有这个场景能写。' },
     { id: 'card', label: '定位卡 / 身份', sub: '我是谁、管什么', x: 356, y: 330, w: 140, h: 66, c: C.L2, ch: 'identity', plain: '岗位说明书：AI 开场先读它，才知道自己是谁、能碰什么。' },
-    { id: 'memo', label: '开头交接', sub: '场景记忆第 0 节 · ≤4 KB', x: 504, y: 330, w: 140, h: 66, c: C.L2, ch: 'core', plain: '交接本：干到哪、下一步、卡在哪。换人（换会话）不换本。' },
-    { id: 'proj', label: '项目记忆', sub: '一项目一份', x: 356, y: 406, w: 140, h: 66, c: C.L2, ch: 'core', plain: '项目档案袋，比任何一条会话都活得久。' },
+    { id: 'memo', label: '开头交接', sub: '场景记忆第 0 节 · ≤4 KB', x: 504, y: 330, w: 140, h: 66, c: C.L2, ch: 'memory', plain: '交接本：干到哪、下一步、卡在哪。换人（换会话）不换本。' },
+    { id: 'proj', label: '项目记忆', sub: '一项目一份', x: 356, y: 406, w: 140, h: 66, c: C.L2, ch: 'memory', plain: '项目档案袋，比任何一条会话都活得久。' },
     { id: 'persona', label: '场景画像', sub: '布局 / 面板 · 工具生成', x: 504, y: 406, w: 140, h: 66, c: C.L2, ch: 'identity', plain: 'AI 的镜子：这个场景摆了哪些面板、长什么样。工具生成，手改即校验失败；视频里叫「给场景装上眼睛」。' },
     { id: 'L4', label: 'L4 运行时', sub: '真的在跑的东西', x: 30, y: 290, w: 270, h: 260, c: C.L4, ch: 'layers', box: true, plain: '办公楼的水电和工具间：放在代码仓外，升级不破坏数据。' },
     { id: 'engine', label: '引擎 / 外壳', sub: '桌面壳 · 场景标签 · 面板', x: 46, y: 330, w: 238, h: 58, c: C.L4, ch: 'build', plain: '那个能切场景标签、每个场景摆一块 AI 面板的桌面程序。' },
     { id: 'mcp', label: 'MCP · 免费 AI', sub: '网页版 AI 接成工具', x: 46, y: 404, w: 238, h: 58, c: C.L4, ch: 'mcp', plain: '雇个助理坐在已登录的网页前，替你问豆包 / 通义 / DeepSeek，把回答抄回来。' },
-    { id: 'gpu', label: 'GPU 优先', sub: 'OCR · 视频编码 · 三维渲染', x: 46, y: 478, w: 238, h: 58, c: C.L4, ch: 'topics', plain: '只有「数据要在这台机器上算」的重活才值得上显卡。' },
+    { id: 'gpu', label: 'GPU 优先', sub: 'OCR · 视频编码 · 三维渲染', x: 46, y: 478, w: 238, h: 58, c: C.L4, ch: 'dispatch', plain: '只有「数据要在这台机器上算」的重活才值得上显卡。' },
     { id: 'L5', label: 'L5 归档', sub: '备份 · 冷备 · 只进不改', x: 700, y: 290, w: 270, h: 70, c: C.L5, ch: 'layers', plain: '档案室：旧版本都在这，能恢复，但不占日常入口。' },
     { id: 'L3', label: 'L3 个人层', sub: '隔离 · 刻意不连线', x: 700, y: 384, w: 270, h: 70, c: C.L3, ch: 'layers', dashed: true, plain: '你的私人保险箱：不进共享层、不进公开仓库。' },
     { id: 'session', label: '会话', sub: '耗材 · 可随时更换', x: 700, y: 478, w: 270, h: 58, c: C.ses, ch: 'identity', plain: '某一天坐在工位上的那个「员工」。人会换，工位和交接本不换。' },
@@ -327,19 +363,13 @@ export const ARCH = {
   ],
 };
 
-// 每章讲的是全景图里哪几块（'*' = 全部）
-export const CH_NODES = {
-  map: '*', why: ['L2', 'session'], layers: ['L0', 'L1', 'L2', 'L3', 'L4', 'L5'],
-  core: ['host', 'L0', 'L1', 'L2', 'memo', 'card', 'proj'], identity: ['session', 'card', 'memo', 'persona'],
-  mcp: ['L4', 'mcp'], dispatch: ['host', 'console', 'L2'], topics: ['gpu', 'L1'],
-  rule2mech: ['audit', 'L0'], build: ['engine', 'L2', 'card', 'memo', 'session', 'audit'],
-  pitfalls: ['engine', 'mcp', 'session', 'L2'], quiz: '*',
-};
 
 // ---------- 大白话（本站提炼）+ 原作者配图 ----------
 const FIG = (f) => `assets/figures/${f}`;
 export const PLAIN = {
-  map: {
+  memory: { analogy: '开头交接就是交班时留的交接本：人（会话）可以换，本子不换。' },
+  collab: { analogy: '协作就是工作室的分工和审批：谁说了算、谁能改哪里、怎么交活。' },
+  intro: {
     analogy: '把 DSH 想成一家只有你一个老板、雇了一群 AI 员工的小工作室。',
     fig: { src: FIG('总纲-全景.svg'), cap: '原作者配图《总纲-全景》：宿主 → 宪法 → 共享层 → 场景 → 项目 → 运行时，记忆在文件里，不在会话里。' },
   },
@@ -350,8 +380,8 @@ export const PLAIN = {
     analogy: '六层 = 工作室里六种柜子，每种柜子上都贴着「谁能开」。',
     fig: { src: FIG('拓扑-总纲.svg'), cap: '原作者配图《拓扑总纲》：节点 = 东西放在哪一层；连线 = 谁读谁、谁写谁、谁兜底。' },
   },
-  core: {
-    analogy: '场景 = 工位，记忆 = 交接本，协作 = 分工和审批制度。',
+  scene: {
+    analogy: '一个场景 = 一个工位：一类活、一套资产、一条常驻的 AI 员工。',
     fig: { src: FIG('单场景自我进化-最小闭环.svg'), cap: '原作者配图《单场景自我进化 · 最小闭环》：一个场景 = 一个工人，会话围着私有记忆、定位卡、项目信息转，旧版进归档。' },
   },
   identity: {
@@ -366,9 +396,7 @@ export const PLAIN = {
     analogy: '派单 = 开工单并把人叫醒，不是往同事抽屉里塞张纸条。',
     fig: { src: FIG('决策-执行-验收-档案.svg'), cap: '原作者配图《决策 — 执行 — 验收 — 档案》：谁来做、怎么动手、凭证据验收、一单一档，单向依赖。' },
   },
-  topics: {
-    analogy: 'GPU 优先 = 重活交给专用机器，但别指望给打长途电话加速；场景人格 = 同一个老板，在会议室和在食堂说话方式不一样。',
-  },
+
   rule2mech: {
     analogy: '规矩 = 墙上贴「请随手关灯」；机制 = 装一个人走灯灭的感应器。',
   },
@@ -385,27 +413,27 @@ export const PLAIN = {
 // 只收原仓库原文或视频转写里的真实事件；q = 原话（照抄），src = 出处（仓库路径或视频时间戳）。
 const R = (p) => ({ label: p, href: `https://github.com/mashanglinyu/luanyujia-workbench/blob/main/${p}` });
 export const CASES = [
-  { ch: 'why', title: '作者一台机器上真跑着 10 个场景',
+  { ch: 'scene', title: '作者一台机器上真跑着 10 个场景',
     what: '工作台改造、客户系统运维、个人站点、行情分析、视频工作流、三维建模、设计杂活、本地电脑、自我复盘、B 站视频理解 —— 每一类活各占一个场景。',
     cost: '每个都有「必须独立」的硬理由：客户运维有保密责任，个人站一改就要发布、有公网风险，本地电脑能删东西，自我复盘是机主私人资料。混在一个窗口里，权限和风险就混在一起。',
     so: '按「风险 / 权限」「资产性质」「对口关系」来切场景，而不是按项目切。',
     src: [R('00-核心机制/三-场景体系.md')] },
-  { ch: 'core', title: '两个场景互相写对方的记忆',
+  { ch: 'collab', title: '两个场景互相写对方的记忆',
     what: '两个场景都能改对方的记忆文件，各自往里写自己的判断。',
     cost: '一周后，双方开始互相引用对方写错的结论，错误在两个场景之间来回放大。',
     so: '修改权分五档，「别人的专属」一个字都不许写，只能发请求。',
     src: [R('00-核心机制/一-协作机制.md'), R('05-协作与规矩/README.md')] },
-  { ch: 'core', title: '一份场景记忆涨到 40 KB',
+  { ch: 'memory', title: '一份场景记忆涨到 40 KB',
     what: '进度、决策、历史全往同一份记忆里追加。',
     cost: '涨到 40 KB 后新会话开场读不完，没人读，交接形同虚设。',
     so: '开头交接只留最新一份、覆盖写、≤ 4 KB（约等于「看 30 秒就能开工」），历史搬进归档。',
     src: [R('00-核心机制/二-记忆机制.md')] },
-  { ch: 'core', title: '没存快照就动手拆记忆',
+  { ch: 'memory', title: '没存快照就动手拆记忆',
     what: '整理记忆时，直接动手把历史拆出去，没先存一份快照。',
     cost: '事后核对脚本根本跑不了 —— 没法证明自己没丢东西。',
     so: '规矩改成「先快照，再动手」：拆完逐行比对搬前搬后，0 差异才算没丢。',
     src: [R('00-核心机制/二-记忆机制.md')] },
-  { ch: 'core', title: '两条会话各写各的，记录数分叉',
+  { ch: 'memory', title: '两条会话各写各的，记录数分叉',
     what: '同一份记录被两条会话分别写回，谁也没先同步。',
     cost: '记录数分叉成 15199 和 21272 两个版本，事后才对上。',
     so: '「会话可以换，没写回的就真丢了」：换会话的最后一件事永远是写好开头交接。',
@@ -452,12 +480,12 @@ export const CASES = [
     cost: '回执其实发进的是自己的收件箱，翻对方日志只会误判「对方没回」。',
     so: '发完就结束本轮，回执作为消息进来，下一轮自然看到。',
     src: [R('00-核心机制/一-协作机制.md')] },
-  { ch: 'topics', title: '6 路并行 OCR，把 8 核机器打到假死',
+  { ch: 'dispatch', title: '6 路并行 OCR，把 8 核机器打到假死',
     what: 'GPU 用不上时退回 CPU，直接开 6 路并行跑 OCR。',
     cost: '每个进程都以为自己能用满 CPU，底层库还「看到几核开几核」，整机假死。',
     so: '退 CPU 三条硬约束：单进程、线程数 2、优先级 BelowNormal。',
     src: [R('00-核心机制/五-GPU优先.md')] },
-  { ch: 'topics', title: '同一个机主，在三个场景是三种语气',
+  { ch: 'scene', title: '同一个机主，在三个场景是三种语气',
     what: '在客户系统运维那里语气急、烦、事多；在个人站松、随手、句子短；在复盘时认真、愿意说细。',
     cost: '一套偏好套在三种时刻，有一半是错的。',
     so: '每个场景维护一行「场景画像」：常见语气、典型原话（带日期出处）、雷区、应对。',
@@ -513,76 +541,76 @@ export const GLOSSARY = [
 // 文字为本站对视频的转述，q 为原话（照画面字幕）；「本站对应」后面的话是本站提炼。
 const VID = (f) => `assets/video/${f}`;
 export const STORY = [
-  { ch: 'why', at: 'walls', t: [30, 68], imgs: [VID('t0122-doubao.jpg')],
+  { ch: 'why', main: true, t: [30, 68], imgs: [VID('t0122-doubao.jpg')],
     title: '作者最早用的，就是普通 AI 助手',
     problem: '用豆包这类工具时，他给每件事置顶一个会话、起专属名字。可长项目做着做着，前面的东西它就不记得了。',
     did: '只能换一个新会话，再把项目信息从头说一遍。',
     result: '这就是「一个窗口」撞上的第一堵墙：会话有记忆上限，而且一条会话只能在一条线上干活。' },
-  { ch: 'why', at: 'core', t: [87, 434], imgs: [VID('t0141-scene-project.jpg'), VID('t0726-brain.jpg')],
+  { ch: 'scene', main: true, t: [87, 434], imgs: [VID('t0141-scene-project.jpg'), VID('t0726-brain.jpg')],
     title: '他的出路：一个场景对接一个项目',
     problem: '会话迟早会满、会被换掉，记在会话里的东西靠不住。',
     did: '给每个场景配一份 AI 可读的 MD 文件（项目信息），AI 干活时把记忆写回这份文件。',
     result: '换了会话，只要读这份文件就知道是什么情况。后来他说：换对话、换模型，只是换一个会思考的大脑。',
     q: '不管怎么换对话换模型，只是换一个会思考的大脑罢了' },
-  { ch: 'layers', at: 'top', t: [42, 462], imgs: [VID('t0052-framework.jpg'), VID('t0751-shell-engine.jpg')],
+  { ch: 'layers', main: true, t: [42, 462], imgs: [VID('t0052-framework.jpg'), VID('t0751-shell-engine.jpg')],
     title: '哪些是 DSH 给的，哪些是作者自己加的',
     problem: '作者拿到的 DeepSeek Harness 只是一个执行框架：会话、技能、插件、MCP、压缩这些底层能力由它提供。',
     did: '场景体系、记忆、索引、宪法、体检，是他在框架之上自己加的一层。两层分开，所以几乎能无边界地改造；改到后来，他把文件骨架反推成「外壳 + 引擎」两块。',
     result: '本站对应：框架给的那部分落在 L4 运行时；他自己加的那层，就是 L0 宪法、L1 共享层、L2 场景私有。' },
-  { ch: 'core', at: 'memory', t: [110, 131], imgs: [VID('t0152-memory-line.gif'), VID('t0211-read-head.jpg')],
+  { ch: 'memory', main: true, t: [110, 131], imgs: [VID('t0152-memory-line.gif'), VID('t0211-read-head.jpg')],
     title: '项目信息越写越肥，于是定了红线',
     problem: '长项目会一直往项目信息里堆，最后膨胀到不可能每次换会话都读一遍。',
     did: '定体量红线：主文件不超过 25 KB，其中「当前交接」那一段不超过 4 KB，超了就把旧内容搬进归档。',
     result: '每次开场只读开头那一段就够；换会话时，把进度覆盖写进这一段。它就是原文里的 §〇，画面上写作「§0 当前交接」。',
     q: '每次开场只读开头那几段就够' },
-  { ch: 'core', at: 'scene', t: [382, 412], imgs: [VID('t0643-skills.jpg')],
+  { ch: 'scene', main: false, t: [382, 412], imgs: [VID('t0643-skills.jpg')],
     title: '场景会犯错，就让它自己改技能',
     problem: '每个场景干活时都会踩坑、犯错，同样的错还会再犯。',
     did: '让它把每次的错误记进自己的技能，自己更新。技能目录（名字 + 一句简介）每轮都在眼前，是一笔固定的小开销；SKILL.md 正文用到才加载。',
     result: '场景越用越熟，又不会因为技能变多而每轮多付一大笔 token。技能再变大，就复用记忆的索引机制。' },
-  { ch: 'core', at: 'collab', t: [434], imgs: [VID('t0731-overwrite.jpg'), VID('t0737-shared-law.jpg')],
+  { ch: 'collab', main: true, t: [434], imgs: [VID('t0731-overwrite.jpg'), VID('t0737-shared-law.jpg')],
     title: '几个场景做同一份内容，互相覆盖',
     problem: '实战里，大家做同一个内容会反复覆盖，谁也做不好。',
     did: '建一份共同记忆文件和一套共同遵守的宪法，各场景再定自己的小规矩。',
     result: '本站对应：下面的「修改权分五档」「唯一对口」就是这件事的落地 —— 同一份东西只能有一个人写。' },
-  { ch: 'identity', at: 'steps', t: [193, 209], imgs: [VID('t0334-claim.gif'), VID('t0322-idcard.jpg')],
+  { ch: 'identity', main: true, t: [193, 209], imgs: [VID('t0334-claim.gif'), VID('t0322-idcard.jpg')],
     title: '有了记忆和界面，AI 还是不知道自己是谁',
     problem: '场景有了记忆、有了自己的界面，AI 知道该做什么，却不知道自己是谁。而且引擎不会因为你把会话命名成场景名，就自动按场景注入任何东西。',
     did: '给每个场景一张身份卡（也是一份文档，跟着场景走）；会话开场第一件事，是拿自己的会话 id 去对场景表，对号入座，再读定位卡和记忆文件。',
     result: '这条规矩写进每轮必读的宪法，认领完就能无缝接着干。',
     q: '能把规矩写进每轮必读的宪法，才叫真正的自动' },
-  { ch: 'identity', at: 'bind', t: [340], imgs: [VID('t0544-eyes.jpg'), VID('t0557-robot.jpg')],
+  { ch: 'identity', main: false, t: [340], imgs: [VID('t0544-eyes.jpg'), VID('t0557-robot.jpg')],
     title: '给场景 AI 装上眼睛',
     problem: 'AI 知道自己是谁、干到哪，却不知道自己的场景长什么样：有哪些面板、各在哪。',
     did: '把场景模样、定位卡、记忆内容绑在一起，让场景的 AI 知道自己的场景长什么样（仓库里就是工具生成的「场景画像」）。',
     result: '每个场景成了一个有身份、有记忆、知道自己模样的「赛博机器人」。' },
-  { ch: 'mcp', at: 'layers', t: [237, 487], imgs: [VID('t0418-switches.gif'), VID('t0815-mcp.jpg')],
+  { ch: 'mcp', main: true, t: [237, 487], imgs: [VID('t0418-switches.gif'), VID('t0815-mcp.jpg')],
     title: '模型对话要钱，就塞免费网页版 AI 进来',
     problem: '只有一个聊天框太单一，而且模型对话是按量花钱的。',
     did: '用 embed 面板内嵌网页，把免费网页版 AI 塞进来，放进右上角一张折叠卡片：一排开关，默认全关，用哪个开哪个。插件和 MCP 也一样当「外挂」，默认关着，要用才开。',
     result: '省了钱，也不让一堆工具描述常驻占上下文（仓库实测一个 MCP 就吃每轮 26.8k token）。' },
-  { ch: 'dispatch', at: 'fsm', t: [356], imgs: [VID('t0559-talk.gif')],
+  { ch: 'dispatch', main: false, t: [356], imgs: [VID('t0559-talk.gif')],
     title: '场景之间开始互相派活',
     problem: '九个场景各干各的，彼此不知道对方存在。',
     did: '让场景之间知道彼此、可以对话协作。比如「本地电脑」场景负责帮所有场景执行清理任务。',
     result: '本站对应：一旦能互相派活，就有了「派了没人接」「双方都在等」的风险 —— 这正是下面状态机要管的事。' },
-  { ch: 'dispatch', at: 'limits', t: [283, 265], imgs: [VID('t0453-incident.jpg'), VID('t0437-hard-rules.jpg')],
+  { ch: 'dispatch', main: true, t: [283, 265], imgs: [VID('t0453-incident.jpg'), VID('t0437-hard-rules.jpg')],
     title: '一晚上，几个 AI 互写「技术小论文」，余额烧光',
     problem: '作者定过「回执必须带证据」「有对话在等回信必须告知对方」，被 AI 演化成「每条都回、每条都写成小论文」，还没人设结束条件。一夜之间助手 2 跑了 262 轮、助手 4 跑了 224 轮、助手 5 跑了 101 轮，04:19 平台报余额不足（402），停摆。（画面里的复盘原文）',
     did: '三条硬规矩写进每轮必读的宪法：负载超过 90% 不许派活；回执一次一条、每条 ≤ 200 字、同一件事最多 3 条，第 3 条写【结束】；见到余额报错立刻停手，不重试、不换模型。',
     result: '这就是下表这些上限的来历。',
     q: '规矩不是写给体面看的，是写给会犯错的机器看的' },
-  { ch: 'topics', at: 'persona', t: [529, 598], imgs: [VID('t0940-self-review.jpg'), VID('t1000-metadata.jpg')],
+  { ch: 'scene', main: false, t: [529, 598], imgs: [VID('t0940-self-review.jpg'), VID('t1000-metadata.jpg')],
     title: '作者最珍贵的场景：自我复盘',
     problem: '他觉得大部分人想要的，是一个懂自己的私人助手。',
     did: '让「自我复盘」场景读取了自己能拿到的全部电子数据，又和它讲述自己的经历，整理成一个有框架的个人资料库；还可以约束不同模型用更客观的文字写记忆、复盘时定义情绪。（这段画面含私人目录，本站未截取）',
     result: '这个场景会基于自己的记忆和技能客观评价他、给建议、帮纠正认知 —— 是「场景即人的一面」走得最深的一面。' },
-  { ch: 'rule2mech', at: 'steps', t: [145, 412, 635], imgs: [VID('t1043-checkup.jpg'), VID('t0232-many-docs.jpg'), VID('t0705-index.jpg')],
+  { ch: 'rule2mech', main: true, t: [145, 412, 635], imgs: [VID('t1043-checkup.jpg'), VID('t0232-many-docs.jpg'), VID('t0705-index.jpg')],
     title: '文档多到读不完：索引 + 每周体检',
     problem: '项目做起来，文档几十上百个，AI 不可能每次全量看一遍；技能文件越踩坑越大，也是一样。',
     did: '按判据给文档密集的目录建索引（三五十个文档就必须有，稀疏 / 临时 / 缓存 / 备份的免）；技能也复用索引，按层级、按同级去读。再定八类体检项，固定每周日自动跑一次，出一份报告。',
     result: '哪里该建索引没建、哪个文件超标、哪条规矩没执行，一眼就能看到，照着报告修 —— 规矩配上了会失败的检查。' },
-  { ch: 'build', at: 'steps', t: [181, 294, 672], imgs: [VID('t0454-nine-scenes.gif'), VID('t0302-ui.jpg')],
+  { ch: 'build', main: true, t: [181, 294, 672], imgs: [VID('t0454-nine-scenes.gif'), VID('t0302-ui.jpg')],
     title: '作者的工作台，是一块块长出来的',
     problem: '场景一开始只是个概念，看不见、分不开。',
     did: '先做一个页面，把 AI 对话钉进去，这就是最基础的工作台；一个场景不够就做九个，东西多了做组合窗、面板一键翻转成整块预览，再加快捷卡片、SSH 控制窗口、400×830 的手机预览窗。',

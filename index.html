@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=6" />
+  <link rel="stylesheet" href="css/style.css?v=7" />
   <script type="importmap">
     {
       "imports": {
@@ -23,29 +23,33 @@
   <div class="fx-scan" aria-hidden="true"></div>
   <div class="fx-vignette" aria-hidden="true"></div>
 
-  <!-- 顶栏 = 场景标签栏：每一章就是一个「场景」 -->
+  <!-- 顶栏：三部分 + 本部分章节 + 已读进度 -->
   <header class="topbar">
-    <a class="brand" href="#boot" aria-label="回到开头">
-      <span class="brand-mark">DSH</span><span class="brand-sub">//神经终端</span>
-    </a>
-    <nav class="tabs" id="tabs" aria-label="章节"></nav>
-    <div class="pin" id="pin" title="当前章节已认领">
-      <span class="pin-dot"></span><span id="pin-text">✓ 已钉住</span>
+    <div class="tb-row">
+      <a class="brand" href="#intro" aria-label="回到序章">
+        <span class="brand-mark">DSH</span><span class="brand-sub">//神经终端</span>
+      </a>
+      <nav class="parts" id="parts" aria-label="三部分"></nav>
+      <div class="prog-top" aria-live="polite"><span id="prog-txt">已读 0 / 13</span><i><b id="prog-bar"></b></i></div>
     </div>
+    <nav class="tabs" id="tabs" aria-label="本部分章节"></nav>
   </header>
 
+  <!-- 本章目录（宽屏） -->
+  <aside class="toc" id="toc" aria-label="本章目录"></aside>
+
   <main id="main">
-    <section class="chapter hero" id="boot" data-formation="core"></section>
-    <section class="chapter" id="map" data-formation="layers"></section>
+    <section class="chapter" id="intro" data-formation="core"></section>
     <section class="chapter" id="why" data-formation="walls"></section>
     <section class="chapter" id="layers" data-formation="layers"></section>
-    <section class="chapter" id="core" data-formation="triad"></section>
+    <section class="chapter" id="scene" data-formation="scatter"></section>
+    <section class="chapter" id="memory" data-formation="helix"></section>
+    <section class="chapter" id="collab" data-formation="triad"></section>
     <section class="chapter" id="identity" data-formation="orbit"></section>
-    <section class="chapter" id="mcp" data-formation="bridge"></section>
     <section class="chapter" id="dispatch" data-formation="ring"></section>
-    <section class="chapter" id="topics" data-formation="scatter"></section>
+    <section class="chapter" id="mcp" data-formation="bridge"></section>
     <section class="chapter" id="rule2mech" data-formation="lattice"></section>
-    <section class="chapter" id="build" data-formation="helix"></section>
+    <section class="chapter" id="build" data-formation="core"></section>
     <section class="chapter" id="pitfalls" data-formation="shards"></section>
     <section class="chapter" id="quiz" data-formation="core"></section>
     <footer class="site-foot" id="foot"></footer>
@@ -54,7 +58,7 @@
   <!-- 底部状态栏 -->
   <div class="statusbar" aria-live="polite">
     <span>session-0000…</span>
-    <span id="sb-scene">场景：开机</span>
+    <span id="sb-scene">场景：00 序章</span>
     <span class="sb-mem"><span>交接</span><i><b id="sb-bar"></b></i><span id="sb-kb">0.0 / 4 KB</span></span>
   </div>
 
