@@ -1,19 +1,102 @@
-// 理念部分（00–06 章）的 DOM 渲染与交互
+// 理念部分（开机 → 专题）的 DOM 渲染与交互
 import {
   CHAPTERS, MCP, META, BOOT_LINES, WALLS, PILLARS, LAYERS, CORE, IDENTITY_STEPS, BIND_FIELDS,
-  IDENTITY_LAWS, DISPATCH, TOPICS,
+  IDENTITY_LAWS, DISPATCH, TOPICS, ARCH, CH_NODES, PLAIN,
 } from './content.js';
 
 export const $ = (s, r = document) => r.querySelector(s);
 export const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-export function head(id, title, lede) {
-  const code = CHAPTERS.find((c) => c.id === id)?.code ?? '--';
-  return `<div class="ch-head reveal">
-    <div class="ch-code">CH.${code}</div>
-    <h2 class="ch-title glitch">${title}</h2>
-    ${lede ? `<p class="ch-lede">${lede}</p>` : ''}
-  </div>`;
+const chOf = (id) => CHAPTERS.find((c) => c.id === id);
+const litOf = (id) => {
+  const v = CH_NODES[id];
+  return new Set(v === '*' ? ARCH.nodes.map((n) => n.id) : v || []);
+};
+
+// 架构图 SVG：full = 全景交互版；否则为章节头的定位小图（只画色块）
+export function archSvg(lit, full = false) {
+  const edge = (e) => {
+    const d = e.pts.map((p, i) => `${i ? 'L' : 'M'}${p[0]},${p[1]}`).join(' ');
+    let lab = '';
+    if (full) {
+      let best = 0, mx = 0, my = 0;
+      for (let i = 1; i < e.pts.length; i++) {
+        const [a, b] = [e.pts[i - 1], e.pts[i]];
+        const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+        if (len > best) { best = len; mx = (a[0] + b[0]) / 2; my = (a[1] + b[1]) / 2; }
+      }
+      const vertical = e.pts.length === 2 && e.pts[0][0] === e.pts[1][0];
+      lab = `<text class="arch-el" x="${vertical ? mx + 8 : mx}" y="${vertical ? my + 4 : my - 6}" text-anchor="${vertical ? 'start' : 'middle'}">${esc(e.t)}</text>`;
+    }
+    return `<path class="arch-e ${e.k}" d="${d}" />${lab}`;
+  };
+  const node = (n) => {
+    const on = lit.has(n.id);
+    const ch = chOf(n.ch);
+    const cls = `arch-n ${n.box ? 'box' : ''} ${n.dashed ? 'dashed' : ''} ${on ? 'on' : 'off'}`;
+    const attrs = full ? ` tabindex="0" role="button" data-id="${n.id}" aria-label="${esc(n.label)}：${esc(n.plain)}"` : '';
+    const ty = n.box ? n.y + 24 : n.y + n.h / 2 - (n.h > 60 ? 6 : 3);
+    // 大框：标题与副标题同一行，避免压住框内小节点
+    const title = n.box
+      ? `<text class="arch-t" x="${n.x + 14}" y="${ty}">${esc(n.label)}<tspan class="arch-s" dx="10">${esc(n.sub)}</tspan></text>`
+      : `<text class="arch-t" x="${n.x + n.w / 2}" y="${ty}" text-anchor="middle">${esc(n.label)}</text>
+      <text class="arch-s" x="${n.x + n.w / 2}" y="${ty + 18}" text-anchor="middle">${esc(n.sub)}</text>`;
+    const text = full ? `${title}
+      ${ch ? `<text class="arch-c" x="${n.x + n.w - 8}" y="${n.y + 14}" text-anchor="end">→${ch.code}</text>` : ''}` : '';
+    return `<g class="${cls}" style="--c:${n.c}"${attrs}><rect x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" rx="${n.box ? 10 : 6}" />${text}</g>`;
+  };
+  // 先画大框，再画连线，最后画小节点，保证可点
+  const boxes = ARCH.nodes.filter((n) => n.box), rest = ARCH.nodes.filter((n) => !n.box);
+  return `<svg class="arch ${full ? 'full' : 'mini'}" viewBox="0 0 1000 640" ${full ? 'role="group" aria-label="DSH 工作台全景架构图"' : 'aria-hidden="true"'}>
+    ${boxes.map(node).join('')}${ARCH.edges.map(edge).join('')}${rest.map(node).join('')}</svg>`;
+}
+
+// 「你在这里」定位小图
+function mini(id) {
+  const v = CH_NODES[id];
+  if (!v || v === '*') return '';
+  const lit = litOf(id);
+  const names = ARCH.nodes.filter((n) => lit.has(n.id)).map((n) => n.label).join(' · ');
+  return `<a class="mini" href="#map" title="回到全景图">
+    ${archSvg(lit)}<span class="mini-cap"><b>你在这里</b>${esc(names)}</span></a>`;
+}
+
+// 「大白话」块 + 原作者配图
+export function plain(id) {
+  const p = PLAIN[id];
+  if (!p) return '';
+  const fig = p.fig ? `<figure class="fig">
+      <button class="fig-btn" type="button" data-zoom="${p.fig.src}" aria-label="放大查看配图"><img src="${p.fig.src}" alt="${esc(p.fig.cap)}" loading="lazy" /></button>
+      <figcaption>${esc(p.fig.cap)} <a href="${META.repo}" target="_blank" rel="noopener">出处 · MIT</a></figcaption>
+    </figure>` : '';
+  return `<div class="plain-wrap reveal ${p.fig ? 'has-fig' : ''}">
+    <div class="plain"><div class="plain-tag">大白话 <span class="tag-mine">本站提炼</span></div>
+      <p class="plain-a">${esc(p.analogy)}</p><p class="plain-s">${esc(p.story)}</p></div>${fig}</div>`;
+}
+
+export function head(id, title, lede, { withPlain = true } = {}) {
+  const code = chOf(id)?.code ?? '--';
+  return `<div class="ch-head reveal ${CH_NODES[id] && CH_NODES[id] !== '*' ? 'with-mini' : ''}">
+    <div class="ch-head-main">
+      <div class="ch-code">CH.${code}</div>
+      <h2 class="ch-title glitch">${title}</h2>
+      ${lede ? `<p class="ch-lede">${lede}</p>` : ''}
+    </div>${mini(id)}
+  </div>${withPlain ? plain(id) : ''}`;
+}
+
+// 图片放大：全站共用一个 <dialog>
+function initZoom() {
+  const dlg = document.createElement('dialog');
+  dlg.className = 'zoom';
+  dlg.innerHTML = '<img alt="" /><button class="btn zoom-x" type="button">关闭 ✕</button>';
+  document.body.append(dlg);
+  const img = dlg.querySelector('img');
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-zoom]');
+    if (b) { img.src = b.dataset.zoom; img.alt = b.querySelector('img')?.alt || ''; dlg.showModal(); return; }
+    if (dlg.open && (e.target === dlg || e.target.closest('.zoom-x'))) dlg.close();
+  });
 }
 
 // 悬停元素 → 粒子组高亮
@@ -34,7 +117,7 @@ function renderBoot(el) {
     <p class="ch-lede" style="font-size:17px">把「一个聊天窗口」变成「一间按场景分工的工作室」。<br>
     这是一份从<b>理念</b>到<b>实战</b>的学习路线：六层结构、三套机制、派单闭环，以及亲手搭一间的清单。</p>
     <div class="row" style="margin-top:26px">
-      <a class="btn solid" href="#why">开始认领 ▸</a>
+      <a class="btn solid" href="#map">先看全景图 ▸</a>
       <a class="btn" href="#build">直接实战</a>
     </div>
     <div class="hero-meta">
@@ -52,6 +135,33 @@ function renderBoot(el) {
     setTimeout(tick, reduced ? 0 : 260);
   };
   tick();
+}
+
+// ---------- 全景 ----------
+function renderMap(el) {
+  el.innerHTML = head('map', '先看<em>全景</em>：一张图装下整个工作台', '后面每一章，都是把这张图里的一块拆开讲。点任意方块，看它是什么、在第几章讲；右上角的「→编号」就是对应章节。', { withPlain: false }) + `
+    <div class="panel arch-panel reveal">
+      <div class="arch-hint">← 左右滑动查看全图 →</div>
+      <div class="arch-scroll">${archSvg(litOf('map'), true)}</div>
+      <div class="arch-info" id="arch-info" aria-live="polite"></div>
+      <div class="arch-legend"><span class="lg main">主轴：规则自上而下</span><span class="lg loop">派单闭环</span><span class="lg soft">承载 / 认领 / 巡检 / 归档</span><span class="lg dash">虚线框：隔离或只读</span></div>
+    </div>` + plain('map');
+  const info = $('#arch-info', el);
+  const show = (id) => {
+    const n = ARCH.nodes.find((x) => x.id === id); if (!n) return;
+    const ch = chOf(n.ch);
+    el.querySelectorAll('.arch.full .arch-n').forEach((g) => g.classList.toggle('sel', g.dataset.id === id));
+    info.innerHTML = `<div class="ai-k" style="color:${n.c}">${esc(n.label)}</div><div class="ai-s">${esc(n.sub)}</div>
+      <p>${esc(n.plain)} <span class="tag-mine">本站提炼</span></p>
+      ${ch ? `<a class="btn" href="#${ch.id}">去 CH.${ch.code}「${esc(ch.name)}」细看 ▸</a>` : ''}`;
+  };
+  el.querySelectorAll('.arch.full [data-id]').forEach((g) => {
+    g.addEventListener('mouseenter', () => show(g.dataset.id));
+    g.addEventListener('focus', () => show(g.dataset.id));
+    g.addEventListener('click', () => show(g.dataset.id));
+    g.addEventListener('keydown', (e) => { if (e.key === 'Enter') { const ch = chOf(ARCH.nodes.find((x) => x.id === g.dataset.id)?.ch); if (ch) location.hash = ch.id; } });
+  });
+  show('host');
 }
 
 // ---------- 01 本质 ----------
@@ -355,7 +465,9 @@ function renderTopics(el, scene) {
 }
 
 export function renderTheory(scene) {
+  initZoom();
   renderBoot($('#boot'));
+  renderMap($('#map'));
   renderWhy($('#why'), scene);
   renderLayers($('#layers'), scene);
   renderCore($('#core'), scene);

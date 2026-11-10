@@ -17,20 +17,26 @@ DeepSeekHarness/
 │   ├── content.js       课程内容数据（纯数据，不写 DOM）
 │   ├── ui.js            理念部分（开机 → 专题）DOM 渲染与交互，导出公共小工具
 │   └── ui-practice.js   实战部分（机制化 → 判据 + 页脚）：清单、JSON 构建器、交接计量器、测验
+├── assets/figures/      原仓库 `配图/` 的 MIT 原图（保持原文件名，出处写进 docs/sources.md）
 ├── docs/
-│   └── sources.md       内容出处与提炼说明
+│   ├── sources.md       内容出处与提炼说明
+│   └── LICENSE-luanyujia-workbench.txt  原仓库 MIT 许可证全文
 └── .claude/launch.json  本地预览服务配置（python3 静态服务 8731，带 no-store 防缓存）
 ```
 - 章节编号由 `content.js` 的 `CH` 顺序自动生成，渲染里用 `head('<章节id>', …)`，不写死编号
 - 新增章节：先在 `content.js` 加数据，再在 `ui.js` 写渲染，**不要把文案硬写进 index.html**
 - 新增 3D 形态：只在 `scene.js` 的 `FORMATIONS` 里加，章节通过 `data-formation` 属性切换
 - 不引入构建工具；需要第三方库时只用 jsdelivr/unpkg 带**精确版本号**的地址
+- 架构图：节点数据只放 `content.js` 的 `ARCH`，章节↔节点对应放 `CH_NODES`；章节头的「你在这里」定位小图由 `head()` 自动生成，不在各章手写
+- 通俗化：每章「大白话」块的数据放 `content.js` 的 `PLAIN[章节id]`（类比 + 小例子 + 可选配图），由 `plain(id)` 渲染，插在章节头之后、专业内容之前
+- 配图只用 MIT 原仓库的图或用户明确授权的图；视频画面未经授权不放
 - 学习进度等用户状态只存 `localStorage`，键名统一前缀 `dsh.` 并带版本号（如 `dsh.progress.v1`），读写包 try/catch
 
 ## 内容纪律
 - 结论先行；每个机制写清「是什么 / 判据一句话 / 不这样会怎样」
 - 原仓库的占位符（`<DSH根>`、`session-0000…`）保持占位，不编造真实路径或会话 id
 - 不编造视频里没说、仓库里没写的内容；自己的提炼要标明是提炼
+- 「大白话」类比属于本站提炼，页面上必须带「本站提炼」标记；先讲人话，再讲专业，专业内容不删
 
 ## 验证
 ```bash
@@ -38,3 +44,4 @@ python3 -m http.server 8731   # 在项目根目录起静态服务
 ```
 - 打开 http://localhost:8731 ，检查：控制台无报错、3D 背景渲染、章节切换时粒子形态变化、测验/清单可交互
 - 手机宽度（375px）无横向滚动
+- 全景图节点可点、能跳章；每章定位小图高亮正确；配图都能加载与放大
