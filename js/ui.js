@@ -1,7 +1,7 @@
 // 理念部分（开机 → 专题）的 DOM 渲染与交互
 import {
   CHAPTERS, MCP, META, BOOT_LINES, WALLS, PILLARS, LAYERS, CORE, IDENTITY_STEPS, BIND_FIELDS,
-  IDENTITY_LAWS, DISPATCH, TOPICS, ARCH, CH_NODES, PLAIN, CASES, GLOSSARY, VIDEO,
+  IDENTITY_LAWS, DISPATCH, TOPICS, ARCH, CH_NODES, PLAIN, CASES, GLOSSARY, STORY,
 } from './content.js';
 
 export const $ = (s, r = document) => r.querySelector(s);
@@ -71,7 +71,7 @@ export function plain(id) {
     </figure>` : '';
   return `<div class="plain-wrap reveal ${p.fig ? 'has-fig' : ''}">
     <div class="plain"><div class="plain-tag">大白话 <span class="tag-mine">本站提炼</span></div>
-      <p class="plain-a">${esc(p.analogy)}</p><p class="plain-s">${esc(p.story)}</p></div>${fig}</div>`;
+      <p class="plain-a">${esc(p.analogy)}</p></div>${fig}</div>`;
 }
 
 // 视频时间戳工具
@@ -102,14 +102,22 @@ export function cases(id) {
     <div class="cases-grid">${list.map(caseCard).join('')}</div></section>`;
 }
 
-// 本章在视频里对应的片段
-function vclips(id) {
-  const used = new Set(CASES.filter((c) => c.ch === id).map((c) => c.img));
-  const segs = (VIDEO.segments || []).filter((v) => v.ch === id && v.img && !used.has(v.img)).slice(0, 4);
-  if (!segs.length) return '';
-  return `<div class="vclips reveal"><div class="cases-tag">视频里怎么讲</div><div class="vclips-row">
-    ${segs.map((v) => `<figure class="vclip"><button class="fig-btn" type="button" data-zoom="${v.img}" aria-label="放大"><img src="${v.img}" alt="${esc(v.title)}" loading="lazy" /></button>
-      <figcaption><a href="${vlink(v.t)}" target="_blank" rel="noopener">▶ ${mmss(v.t)}</a> ${esc(v.title)}</figcaption></figure>`).join('')}</div></div>`;
+// 「作者是这么走过来的」：视频里的真实经历，嵌在讲解子模块里
+export function story(ch, at) {
+  return STORY.filter((x) => x.ch === ch && x.at === at).map((x) => `
+  <aside class="story reveal">
+    <div class="story-tag">作者是这么走过来的 <span>视频 ${x.t.map((t) => `<a href="${vlink(t)}" target="_blank" rel="noopener">▶ ${mmss(t)}</a>`).join(' ')}</span></div>
+    <h4>${esc(x.title)}</h4>
+    <div class="story-body">
+      <ol class="story-steps">
+        <li><b>遇到的问题</b><p>${esc(x.problem)}</p></li>
+        <li><b>作者怎么做</b><p>${esc(x.did)}</p></li>
+        <li><b>结果 / 定下的规矩</b><p>${esc(x.result)}</p>${x.q ? `<q>${esc(x.q)}</q>` : ''}</li>
+      </ol>
+      <div class="story-media">${x.imgs.map((src, i) => `<button class="fig-btn ${i ? 'sub' : 'main'}" type="button" data-zoom="${src}" aria-label="放大视频画面"><img src="${src}" alt="${esc(x.title)}（视频画面）" loading="lazy" /></button>`).join('')}
+        <span class="story-cap">画面取自原视频 · 版权归原作者</span></div>
+    </div>
+  </aside>`).join('');
 }
 
 export function head(id, title, lede, { withPlain = true } = {}) {
@@ -120,7 +128,7 @@ export function head(id, title, lede, { withPlain = true } = {}) {
       <h2 class="ch-title glitch">${title}</h2>
       ${lede ? `<p class="ch-lede">${lede}</p>` : ''}
     </div>${mini(id)}
-  </div>${withPlain ? plain(id) + vclips(id) + cases(id) : ''}`;
+  </div>${withPlain ? plain(id) + cases(id) : ''}`;
 }
 
 // 图片放大：全站共用一个 <dialog>
@@ -185,7 +193,8 @@ function renderMap(el) {
       <div class="arch-legend"><span class="lg main">主轴：规则自上而下</span><span class="lg loop">派单闭环</span><span class="lg soft">承载 / 认领 / 巡检 / 归档</span><span class="lg dash">虚线框：隔离或只读</span></div>
     </div>` + plain('map') + `
     <div class="panel reveal gloss"><div class="panel-tag">术语表 · 先把这几个词说成人话</div>
-      <dl>${GLOSSARY.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl></div>`;
+      <dl>${GLOSSARY.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl></div>
+    <p class="judge reveal">后面每一章讲到具体机制时，都会插入「作者是这么走过来的」：作者在<a href="${META.video}" target="_blank" rel="noopener">原视频</a>里讲的真实经历，配当时的画面，时间戳可直接跳转。</p>`;
   const info = $('#arch-info', el);
   const show = (id) => {
     const n = ARCH.nodes.find((x) => x.id === id); if (!n) return;
@@ -204,23 +213,6 @@ function renderMap(el) {
   show('host');
 }
 
-// ---------- 视频导读 ----------
-function renderVideo(el) {
-  const segs = VIDEO.segments || [];
-  el.innerHTML = head('video', '视频<em>导读</em>：12 分钟讲了什么', VIDEO.lede, { withPlain: false }) + `
-    <ol class="vtl reveal">${segs.map((v) => {
-      const ch = chOf(v.ch);
-      return `<li class="vtl-i">
-        <a class="vtl-t" href="${vlink(v.t)}" target="_blank" rel="noopener">▶ ${mmss(v.t)}</a>
-        <div class="vtl-b"><h4>${esc(v.title)}</h4><p>${esc(v.sum)}</p>
-          ${v.q ? `<q>${esc(v.q)}</q>` : ''}
-          ${ch ? `<a class="vtl-ch" href="#${ch.id}">本站 CH.${ch.code}「${esc(ch.name)}」▸</a>` : ''}</div>
-        ${v.img ? `<button class="fig-btn vtl-img" type="button" data-zoom="${v.img}" aria-label="放大视频画面"><img src="${v.img}" alt="${esc(v.title)}" loading="lazy" /></button>` : ''}
-      </li>`;
-    }).join('')}</ol>
-    <p class="judge reveal">${esc(VIDEO.note)} <a href="${META.video}" target="_blank" rel="noopener">去 B 站看原视频 ▸</a></p>`;
-}
-
 // ---------- 01 本质 ----------
 function renderWhy(el, scene) {
   el.innerHTML = head('why', '一个窗口，会撞上<em>三堵墙</em>', '为什么不能一个聊天框干到底？不是 AI 不够强，是结构撑不住。') + `
@@ -228,12 +220,12 @@ function renderWhy(el, scene) {
       ${WALLS.map((w, i) => `<div class="cell" tabindex="0" data-g="${i}">
         <span class="n">WALL.${i + 1}</span><div class="k">${w.title}</div>
         <div class="s">${w.sym}</div><div class="s" style="margin-top:6px;color:var(--amber)">↳ ${w.cause}</div></div>`).join('')}
-    </div>
+    </div>${story('why', 'walls')}
     <div class="panel reveal">
       <div class="panel-tag">核心只有一句</div>
       <p class="quote-big">记忆在<b>文件</b>里，不在<b>会话</b>里。</p>
       <p>所以会话可以无限换，场景不会失忆。一条会话的价值 = 它<b>产出的文件</b>，不是它聊了多少。「换会话」不是灾难，<b>没写交接就换</b>才是。</p>
-    </div>
+    </div>${story('why', 'core')}
     <div class="panel reveal">
       <div class="panel-tag">五块零件，各自可替换</div>
       <div class="grid g3">${PILLARS.map((p) => `<div class="cell"><span class="n">${p.n}</span><div class="k">${p.k}</div><div class="s">${p.d}</div></div>`).join('')}</div>
@@ -244,7 +236,7 @@ function renderWhy(el, scene) {
 
 // ---------- 02 六层 ----------
 function renderLayers(el, scene) {
-  el.innerHTML = head('layers', '六层：东西<em>归谁</em>、谁能写', '同一台机器上常驻多个 AI 场景，像一群同事：共用规则与台账，各自有独立记忆。悬停任一层，右侧对应的环会亮起。') + `
+  el.innerHTML = head('layers', '六层：东西<em>归谁</em>、谁能写', '同一台机器上常驻多个 AI 场景，像一群同事：共用规则与台账，各自有独立记忆。悬停任一层，右侧对应的环会亮起。') + story('layers', 'top') + `
     <div class="reveal">${LAYERS.map((l, i) => `
       <div class="layer" tabindex="0" data-g="${i}" style="--lc:${l.color}">
         <div class="id">${l.id}</div>
@@ -312,7 +304,7 @@ function renderCore(el, scene) {
   const show = (k) => {
     const c = CORE[k];
     body.innerHTML = `<div class="panel-tag">${c.title} · 不搞会怎样：<span class="warn">${c.fail}</span></div>
-      <h3>${c.one}</h3>` + ({ collab: collabHTML, memory: memoryHTML, scene: sceneHTML }[k])(c);
+      <h3>${c.one}</h3>` + story('core', k) + ({ collab: collabHTML, memory: memoryHTML, scene: sceneHTML }[k])(c);
   };
   el.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => {
     el.querySelectorAll('.seg button').forEach((x) => x.classList.toggle('on', x === b));
@@ -326,7 +318,7 @@ function renderIdentity(el, scene) {
   el.innerHTML = head('identity', 'AI 怎么知道<em>「我是谁」</em>', '引擎本身不按场景注入任何东西 —— AI 开场时对自己的身份是空白的。工作台和「多标签浏览器」的根本区别就在这里。') + `
     <div class="panel reveal"><div class="panel-tag">身份认领 · 四步</div>
       <div class="steps">${IDENTITY_STEPS.map((s, i) => `<div class="step" tabindex="0" data-g="${i}"><div><b>${s.t}</b><span>${s.d}</span></div></div>`).join('')}</div>
-    </div>
+    </div>${story('identity', 'steps')}
     <div class="panel reveal"><div class="panel-tag">跟着窗口走 · 会话绑定三字段</div>
 <pre class="term">{
   <span class="k">"type"</span>: <span class="s">"harness"</span>,
@@ -336,6 +328,7 @@ function renderIdentity(el, scene) {
 }</pre>
       <div class="grid g3" style="margin-top:12px">${BIND_FIELDS.map((f) => `<div class="cell"><div class="k mono" style="color:var(--cyan)">${f.k}</div><div class="s"><b style="color:var(--text)">${f.role}</b> · ${f.d}</div></div>`).join('')}</div>
     </div>
+    ${story('identity', 'bind')}
     <div class="panel reveal"><div class="panel-tag">三条硬结论</div>
       <ul class="clean">${IDENTITY_LAWS.map((x) => `<li>${x}</li>`).join('')}</ul>
     </div>`;
@@ -348,7 +341,7 @@ function renderMcp(el, scene) {
   el.innerHTML = head('mcp', '「手」：把网页版 AI<em>接成工具</em>', '不花 API token，让本地 AI 能问豆包 / 通义 / DeepSeek / 智谱。做法不是破解接口，而是复用一个已登录的浏览器：像人一样输入、等它说完、把话取回来。') + `
     <div class="panel reveal"><div class="panel-tag">四层 · 缺一不可（悬停看右侧对应节点）</div>
       <div class="pipe">${M.layers.map((l, i) => `<div class="pipe-n" tabindex="0" data-g="${i}"><b>${l.k}</b><span>${l.d}</span><em>${l.key}</em></div>`).join('<div class="pipe-a" aria-hidden="true">⇄</div>')}</div>
-    </div>
+    </div>${story('mcp', 'layers')}
     <div class="panel reveal"><div class="panel-tag">「零成本」的真实账单</div>
       <div class="tbl-wrap"><table class="tbl"><thead><tr><th>你花的是</th><th>不是</th></tr></thead><tbody>
         ${M.pay.map(([a, b]) => `<tr><td class="ok">${a}</td><td style="color:var(--dim)">${b}</td></tr>`).join('')}</tbody></table></div>
@@ -459,6 +452,7 @@ function fsmSVG() {
 function renderDispatch(el, scene) {
   const D = DISPATCH;
   el.innerHTML = head('dispatch', '派单 ≠ <em>公告</em>', '多 AI 系统里最贵的浪费是「双方都在等对方」—— 而且它没有任何报错。') + `
+    ${story('dispatch', 'fsm')}
     <div class="panel reveal"><div class="panel-tag">状态机 · 点按钮模拟一条活</div>
       ${fsmSVG()}
       <div class="row"><button class="btn sm" data-run="ok">▶ 对方带证据回执</button><button class="btn sm" data-run="timeout">▶ 超时没回</button></div>
@@ -472,6 +466,7 @@ function renderDispatch(el, scene) {
       <div class="grid g2">${D.kit.map((k, i) => `<div class="cell"><span class="n">0${i + 1}</span><div class="k">${k.k}</div><div class="s">${k.d}</div></div>`).join('')}</div>
       <div class="cmp" style="margin-top:12px"><div class="bad">❌ ${D.bad}</div><div class="good">✅ ${D.good}</div></div>
     </div>
+    ${story('dispatch', 'limits')}
     <div class="panel reveal"><div class="panel-tag">上限 · 规矩 10：禁止无限对话</div>
       <div class="tbl-wrap"><table class="tbl"><tbody>${D.limits.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</tbody></table></div>
       <p class="judge">活干完了但对方还不知道 = 没干完。</p>
@@ -526,7 +521,7 @@ function renderTopics(el, scene) {
       <h3 style="margin-top:16px">四条硬边界</h3>
       <ul class="clean no">${P.bounds.map((x) => `<li>${x}</li>`).join('')}</ul>
       <p class="judge">开场先读自己那一行，决定三件事：回多长、先说啥、别踩什么。说对一次，比说错三次再道歉便宜。</p>
-    </div>`;
+    </div>${story('topics', 'persona')}`;
   bindHighlight(el, '[data-g]', scene);
 }
 
@@ -534,7 +529,6 @@ export function renderTheory(scene) {
   initZoom();
   renderBoot($('#boot'));
   renderMap($('#map'));
-  renderVideo($('#video'));
   renderWhy($('#why'), scene);
   renderLayers($('#layers'), scene);
   renderCore($('#core'), scene);

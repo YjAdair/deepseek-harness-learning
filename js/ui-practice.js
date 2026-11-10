@@ -3,7 +3,7 @@ import {
   META, RULE2MECH, BUILD_STEPS, BUILD_WARN, QUICKSTART, PANEL_TYPES, NO_SURPRISE,
   INCIDENTS, INCIDENTS_COMMON, PITFALLS, QUIZ, MY_TAKEAWAYS, CASES, CHAPTERS,
 } from './content.js';
-import { $, esc, head, bindHighlight } from './ui.js';
+import { $, esc, head, bindHighlight, story } from './ui.js';
 
 // 事故时间线：所有带日期的案例按日期排
 function timeline() {
@@ -27,7 +27,7 @@ function renderRule2Mech(el, scene) {
     <div class="panel reveal"><p class="quote-big" style="margin:0">${R.quote.replace('会失败的检查', '<b>会失败的检查</b>')}</p></div>
     <div class="panel reveal"><div class="panel-tag">五步法 · 悬停看晶格逐层点亮</div>
       <div class="steps">${R.steps.map((s, i) => `<div class="step" tabindex="0" data-g="${i}"><div><b>${s.t}</b><span>${esc(s.d)}</span></div></div>`).join('')}</div>
-    </div>
+    </div>${story('rule2mech', 'steps')}
     <div class="panel reveal"><div class="panel-tag">规矩 → 机制 对照</div>
       ${R.pairs.map(([a, b]) => `<div class="flip"><span class="from">「${a}」</span><span class="arr">⇒</span><span class="to">${esc(b).replace(/`([^`]+)`/g, '<code>$1</code>')}</span></div>`).join('')}
       <p class="judge">如果一个检查永远通过，它就不是检查，是装饰。</p>
@@ -43,6 +43,7 @@ function renderBuild(el, scene) {
       <pre class="term">${QUICKSTART.map((q, i) => `<span class="c">${i + 1}.</span> ${esc(q)}`).join('\n')}</pre>
       <p style="font-size:13.5px;color:var(--dim);margin-top:10px">只想看外观：仓库里 <code>11-最小可运行壳/index.html</code> 单文件零依赖，双击就能跑。</p>
     </div>
+    ${story('build', 'steps')}
     <div class="panel reveal"><div class="panel-tag">六步上手 · 验收清单</div>
       <div class="prog"><span id="pg-txt">0%</span><i><b id="pg-bar"></b></i></div>
       <div id="bsteps">${BUILD_STEPS.map((s, i) => `
