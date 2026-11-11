@@ -105,13 +105,15 @@ export const quiz = {
       }
       const q = QUIZ[i];
       const ch = CHAPTERS.find((c) => c.id === q.ch);
+      // 选项随机排序，避免答案位置被记住
+      const order = q.opts.map((_, k) => k).sort(() => Math.random() - 0.5);
       box.innerHTML = `<div class="panel-tag">Q.${String(i + 1).padStart(2, '0')} / ${QUIZ.length} · 得分 ${score}${ch ? ` · 出自 ${ch.code}「${ch.name}」` : ''}</div>
         <div class="qz-q">${q.q}</div>
-        ${q.opts.map((o, j) => `<button class="qz-opt" type="button" data-j="${j}">${String.fromCharCode(65 + j)}. ${o}</button>`).join('')}
+        ${order.map((k, n) => `<button class="qz-opt" type="button" data-j="${k}">${String.fromCharCode(65 + n)}. ${q.opts[k]}</button>`).join('')}
         <div class="qz-why" id="qz-why"></div>`;
       box.querySelectorAll('.qz-opt').forEach((b) => b.addEventListener('click', () => {
         const j = Number(b.dataset.j);
-        box.querySelectorAll('.qz-opt').forEach((x, k) => { x.disabled = true; if (k === q.a) x.classList.add('right'); });
+        box.querySelectorAll('.qz-opt').forEach((x) => { x.disabled = true; if (Number(x.dataset.j) === q.a) x.classList.add('right'); });
         if (j === q.a) score++; else b.classList.add('wrong');
         $('#qz-why', box).innerHTML = '判据 ▸ ' + esc(q.why) + (ch && j !== q.a ? ` <a href="#${ch.id}">回看 ${ch.code}「${esc(ch.name)}」▸</a>` : '');
         box.insertAdjacentHTML('beforeend', `<button class="btn sm solid" type="button" id="qz-next">${i + 1 < QUIZ.length ? '下一题 ▸' : '看结果'}</button>`);
